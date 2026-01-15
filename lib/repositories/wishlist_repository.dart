@@ -1,5 +1,7 @@
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:stylex/models/HiveModelWishlist.dart';
 import 'package:stylex/models/wishlistItemModel.dart';
+import 'package:stylex/services/api/wishlistSync.dart';
 import 'package:stylex/services/hive/wishlist_service.dart';
 
 class WishlistRepository {
@@ -34,11 +36,22 @@ class WishlistRepository {
       addedAt: item.addedAt,
     );
     await localService.saveToWishlist(hiveItem);
-    // Add background cloud sync call here if needed
+   
+    _attemptSync();
   }
 
   Future<void> removeFromWishlist(String productId) async {
     await localService.removeFromWishlist(productId);
-    // Add background cloud sync call here if needed
+    
+    _attemptSync();
+  }
+
+   Future<void> _attemptSync() async {
+    final prefs = await SharedPreferences.getInstance();
+    final uid = prefs.getString('firebase_uid');
+
+    if (uid != null) {
+      await syncHiveWishlistToBackend(uid);
+    }
   }
 }

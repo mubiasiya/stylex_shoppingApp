@@ -3,6 +3,7 @@ import 'package:meta/meta.dart';
 import 'package:stylex/models/cartItemModel.dart';
 import 'package:stylex/models/productModel.dart';
 import 'package:stylex/repositories/cart_repository.dart';
+import 'package:stylex/services/api/placeOrder.dart';
 
 part 'cart_event.dart';
 part 'cart_state.dart';
@@ -105,6 +106,48 @@ class CartBloc extends Bloc<CartEvent, CartState> {
 
       // 2. Repository wipes selected from Hive and overwrites Cloud Cart
       await repository.clearSelectedItems(remainingItems);
+    });
+
+
+    // --- PLACE ORDER ---
+    on<PlaceOrderEvent>((event, emit) async {
+      // 1. Set loading state
+      emit(state.copyWith(status: CartStatus.loading));
+
+      try {
+        // 2. Filter selected items to send to the server
+        final selectedItems =
+            state.items.where((item) => item.selected).toList();
+
+        if (selectedItems.isEmpty) {
+          emit(
+            state.copyWith(status: CartStatus.error),
+          ); // Handle empty selection
+          return;
+        }
+
+      print('calling place order');
+        final bool success =await placeOrder(cartItems: selectedItems,
+         address: event.address);
+
+        if (success) {
+         
+          final remainingItems =
+              state.items.where((item) => !item.selected).toList();
+          await repository.clearSelectedItems(remainingItems);
+
+          emit(
+            state.copyWith(
+              items: remainingItems,
+              status: CartStatus.success, // This will trigger navigation in UI
+            ),
+          );
+        } else {
+          emit(state.copyWith(status: CartStatus.error));
+        }
+      } catch (e) {
+        emit(state.copyWith(status: CartStatus.error));
+      }
     });
 
    

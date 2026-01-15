@@ -1,6 +1,14 @@
 part of 'cart_bloc.dart';
 
-enum CartStatus { initial, loading, success, alreadyInCart, error }
+enum CartStatus {
+  initial,
+  loading,
+  success,
+  alreadyInCart,
+  error,
+  orderLoading,
+  orderSuccess,
+}
 
 @immutable
 class CartState {

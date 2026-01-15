@@ -28,3 +28,10 @@ class ToggleSelection extends CartEvent {
 class LoadCart extends CartEvent {}
 
 class RemoveSelectedItems extends CartEvent {}
+
+class PlaceOrderEvent extends CartEvent {
+  final String address;
+  final double totalAmount;
+
+  PlaceOrderEvent({required this.address, required this.totalAmount});
+}

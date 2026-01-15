@@ -5,6 +5,7 @@ import 'package:stylex/models/wishlistItemModel.dart';
 import 'package:stylex/screens/Home/search_screen.dart';
 import 'package:stylex/screens/product_details.dart';
 import 'package:stylex/services/api/searchApi.dart';
+import 'package:stylex/services/api/viewtrackApi.dart';
 import 'package:stylex/widgets/backbutton.dart';
 import 'package:stylex/widgets/cartIcon.dart';
 import 'package:stylex/widgets/navigation.dart';
@@ -130,6 +131,7 @@ class ProductCard extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         navigation(context, ProductDetailsPage(product: item));
+        trackUserInterest(item['category']);
       },
       child: Container(
         decoration: BoxDecoration(

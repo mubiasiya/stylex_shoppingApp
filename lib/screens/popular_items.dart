@@ -1,4 +1,3 @@
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
@@ -71,7 +70,7 @@ class _PopularItemsSectionState extends State<PopularItemsSection> {
     required  List<Product> data,
   }) {
     return SizedBox(
-      height: 375,
+      height: 300,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),

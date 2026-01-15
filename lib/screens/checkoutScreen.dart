@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:stylex/screens/ordersucceedScreen.dart';
 import 'package:stylex/widgets/elivated_button.dart';
 import 'package:stylex/bloc/cart_bloc.dart';
+import 'package:stylex/widgets/scaff_msg.dart';
 
 class CheckoutPage extends StatefulWidget {
   final int total_price;
@@ -191,37 +192,63 @@ class _CheckoutPageState extends State<CheckoutPage> {
   }
 
   Widget _bottomBar(BuildContext context, int price) {
-    return Container(
-      height: 70,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -3),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              "₹$price",
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+    return BlocListener<CartBloc, CartState>(
+      listener: (context, state) {
+        if (state.status == CartStatus.success) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => OrderSuccessPage()),
+          );
+        }
+
+        else if (state.status == CartStatus.error) {
+         message(context, 'Failed to place order,Please try again later');
+        }
+      },
+      child: Container(
+        height: 70,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, -3),
             ),
-          ),
-          Expanded(
-            child: button('PROCEED', () {
-              context.read<CartBloc>().add(RemoveSelectedItems());
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => OrderSuccessPage()),
-              );
-            }),
-          ),
-        ],
+          ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                "₹$price",
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            Expanded(
+              child: button(context.watch<CartBloc>().state.status == CartStatus.loading 
+                  ? 'PLEASE WAIT...' 
+                  : 'PROCEED', () {
+                // context.read<CartBloc>().add(RemoveSelectedItems());
+                context.read<CartBloc>().add(
+                    PlaceOrderEvent(
+                      address: addresses[selectedAddress]["address"].toString(),
+                      totalAmount: price.toDouble(),
+                    ),
+                  );
+                  context.watch<CartBloc>().state.status == CartStatus.success?
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => OrderSuccessPage()),
+                ):null;
+              }),
+            ),
+          ],
+        ),
       ),
     );
   }

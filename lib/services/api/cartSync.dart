@@ -7,10 +7,10 @@ import 'package:stylex/models/HiveModelCart.dart';
 Future<void> syncHiveCartToBackend(String firebaseUid) async {
   var box = Hive.box<CartItemHive>('cartBox');
 
-  // 1. Get ALL items (because if one is missing here, it should be removed from DB)
+  
   final allItems = box.values.toList();
 
-  // 2. Prepare data for API (using your toApiJson method)
+  
   List cartData =
       allItems
           .map((item) => {"productId": item.productId, "quantity": item.qty})
