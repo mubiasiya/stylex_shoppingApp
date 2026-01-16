@@ -88,18 +88,25 @@ class _PurchasesPageState extends State<PurchasesPage> {
         title: title('My purchases'),
         elevation: 0,
       ),
-      body: Column(
-        children: [
-          _searchBar(),
-          Expanded(
-            child:
-                isLoading
-                    ? _buildShimmerLoading()
-                    : filteredOrders.isEmpty
-                    ? _buildEmptyState()
-                    : _buildOrderList(),
-          ),
-        ],
+      body: RefreshIndicator(
+        backgroundColor: Colors.white,
+        color:Colors.deepOrange.shade400,
+        onRefresh:()async{
+        await  loadOrdersFromDb();
+          },
+        child: Column(
+          children: [
+            _searchBar(),
+            Expanded(
+              child:
+                  isLoading
+                      ? _buildShimmerLoading()
+                      : filteredOrders.isEmpty
+                      ? _buildEmptyState()
+                      : _buildOrderList(),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -238,6 +245,19 @@ class _PurchasesPageState extends State<PurchasesPage> {
   }
 
   Widget _buildEmptyState() {
-    return const Center(child: Text("No orders found."));
+    return ListView(
+      physics:
+          const AlwaysScrollableScrollPhysics(), // Forces the list to be pullable
+      children: [
+        SizedBox(height: MediaQuery.of(context).size.height * 0.3),
+        const Center(
+          child: Text(
+            "No orders found.\nPull down to refresh",
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.grey),
+          ),
+        ),
+      ],
+    );
   }
 }
