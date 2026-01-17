@@ -23,6 +23,7 @@ class productsPage extends StatefulWidget {
 
 class _productsPageState extends State<productsPage> {
   Future<List<Product>>? products;
+  bool hasProducts = false;
 
   void getproduct() async {
     Future<List<Product>> products1 = SearchApi.searchProducts(
@@ -64,6 +65,9 @@ class _productsPageState extends State<productsPage> {
           //loading
 
           if (snapshot.connectionState == ConnectionState.waiting) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (hasProducts != false) setState(() => hasProducts = false);
+            });
             return Center(
               child: CircularProgressIndicator(
                 color: Colors.deepOrange.withOpacity(0.7),
@@ -73,6 +77,9 @@ class _productsPageState extends State<productsPage> {
 
           // Error
           if (snapshot.hasError) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (hasProducts != false) setState(() => hasProducts = false);
+            });
             return Center(
               child: Text(
                 "Something went wrong",
@@ -83,6 +90,9 @@ class _productsPageState extends State<productsPage> {
 
           // No data
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (hasProducts != false) setState(() => hasProducts = false);
+            });
             return const Center(
               child: Text(
                 "No products found",
@@ -94,6 +104,9 @@ class _productsPageState extends State<productsPage> {
           //products
 
           final products = snapshot.data!;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (hasProducts != true) setState(() => hasProducts = true);
+          });
           return GridView.builder(
             padding: const EdgeInsets.all(12),
             itemCount: products.length,
@@ -110,7 +123,7 @@ class _productsPageState extends State<productsPage> {
         },
       ),
 
-      bottomNavigationBar: bottom(context),
+      bottomNavigationBar:hasProducts? bottom(context):null,
     );
   }
 }
@@ -221,17 +234,8 @@ class ProductCard extends StatelessWidget {
                                 ),
                               );
                             },
-                          ), // isFavorite
-                          //     ? Icon(
-                          //       Icons.favorite,
-                          //       size: 25,
-                          //       color: Colors.deepOrange,
-                          //     )
-                          //     : Icon(
-                          //       Icons.favorite_border,
-                          //       size: 25,
-                          //       color: Colors.black,
-                          //     ),
+                          ), 
+                         
                         ),
                       ],
                     ),

@@ -191,9 +191,12 @@ Widget buildSubCategoryItem(
 ) {
   return GestureDetector(
     onTap: () {
-     navigation(context, productsPage(search:  currentSubCategories[index].substring(0,
-            currentSubCategories[index].length-1,
-          )));
+      String keyword=currentSubCategories[index].substring(0,
+            currentSubCategories[index].length-1)
+            .replaceAll(' ', '');
+           
+     navigation(context, productsPage(search:  keyword,
+          ));
     },
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,

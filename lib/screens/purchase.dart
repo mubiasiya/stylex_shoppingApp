@@ -20,6 +20,8 @@ class _PurchasesPageState extends State<PurchasesPage> {
   List<dynamic> filteredOrders = [];
   bool isLoading = true;
 
+  Map<String,Color> colors={"processing":const Color.fromARGB(255, 168, 95, 31), "shipped":Colors.orange, "delivered":Colors.green, "cancelled":Colors.red};
+
   @override
   void initState() {
     super.initState();
@@ -160,8 +162,8 @@ class _PurchasesPageState extends State<PurchasesPage> {
           margin: const EdgeInsets.only(bottom: 13),
           decoration: BoxDecoration(
             color: Colors.white,
-            border: const Border(
-              right: BorderSide(color: Colors.deepOrange, width: 3),
+            border:  Border(
+              right: BorderSide(color: colors[product['status']]!, width: 3),
             ),
             boxShadow: [
               BoxShadow(
@@ -202,16 +204,22 @@ class _PurchasesPageState extends State<PurchasesPage> {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      "Status: ${product['status']}",
-                      style: const TextStyle(
-                        color: Colors.green,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    Row(
+                      children: [
+                        Icon(Icons.circle,color: colors[product['status']],size: 13,),
+                        Text(
+                          " ${product['status']}",
+                          style:  TextStyle(
+                            color: colors[product['status']],
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14
+                          ),
+                        ),
+                      ],
                     ),
                     Text(
                       "Price: ₹${product['price']}",
-                      style: const TextStyle(fontSize: 13, color: Colors.grey),
+                      style: const TextStyle(fontSize: 13, color: Colors.black),
                     ),
                   ],
                 ),
@@ -254,7 +262,7 @@ class _PurchasesPageState extends State<PurchasesPage> {
           child: Text(
             "No orders found.\nPull down to refresh",
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey),
+            style: TextStyle(color: Colors.black),
           ),
         ),
       ],
