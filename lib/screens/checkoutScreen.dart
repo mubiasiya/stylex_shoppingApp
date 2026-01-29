@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:stylex/models/addressModel.dart';
+import 'package:stylex/screens/accountScreen.dart';
 import 'package:stylex/screens/ordersucceedScreen.dart';
+import 'package:stylex/utils/prefs.dart';
 import 'package:stylex/widgets/elivated_button.dart';
 import 'package:stylex/bloc/cart_bloc.dart';
+import 'package:stylex/widgets/navigation.dart';
 import 'package:stylex/widgets/scaff_msg.dart';
 
 class CheckoutPage extends StatefulWidget {
@@ -18,18 +22,20 @@ class _CheckoutPageState extends State<CheckoutPage> {
   int selectedAddress = 0;
   String paymentMethod = "COD";
 
-  final addresses = [
-    {
-      "name": "Mubeena",
-      "phone": "9876543210",
-      "address": "House No 12, MG Road, Kochi, Kerala - 682001",
-    },
-    {
-      "name": "Office",
-      "phone": "9998887776",
-      "address": "Infopark, Kakkanad, Kochi, Kerala - 682030",
-    },
-  ];
+  List<AddressModel> addresses = [];
+
+  @override
+  void initState() {
+    super.initState();
+    loadAdress();
+  }
+
+  void loadAdress() async {
+    List<AddressModel> localAddresses = await Prefs.loadAddressesLocally();
+    setState(() {
+      addresses = localAddresses;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +64,15 @@ class _CheckoutPageState extends State<CheckoutPage> {
               children: [
                 Spacer(),
                 TextButton(
-                  onPressed: () => {},
+                  onPressed: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AccountPage(),
+                      ),
+                    );
+                    loadAdress();
+                  },
                   child: Text("Add New", style: TextStyle(color: Colors.black)),
                 ),
               ],
@@ -88,7 +102,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
     );
   }
 
-  Widget _addressCard(Map addr, int index) {
+  Widget _addressCard(AddressModel addr, int index) {
     return GestureDetector(
       onTap: () {
         setState(() => selectedAddress = index);
@@ -122,13 +136,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    addr["name"],
+                    addr.fullAddress,
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 4),
-                  Text(addr["phone"]),
-                  const SizedBox(height: 4),
-                  Text(addr["address"]),
                 ],
               ),
             ),
@@ -199,10 +209,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
             context,
             MaterialPageRoute(builder: (_) => OrderSuccessPage()),
           );
-        }
-
-        else if (state.status == CartStatus.error) {
-         message(context, 'Failed to place order,Please try again later');
+        } else if (state.status == CartStatus.error) {
+          message(context, 'Failed to place order,Please try again later');
         }
       },
       child: Container(
@@ -230,22 +238,27 @@ class _CheckoutPageState extends State<CheckoutPage> {
               ),
             ),
             Expanded(
-              child: button(context.watch<CartBloc>().state.status == CartStatus.loading 
-                  ? 'PLEASE WAIT...' 
-                  : 'PROCEED', () {
-                // context.read<CartBloc>().add(RemoveSelectedItems());
-                context.read<CartBloc>().add(
+              child: button(
+                context.watch<CartBloc>().state.status == CartStatus.loading
+                    ? 'PLEASE WAIT...'
+                    : 'PROCEED',
+                () {
+                  // context.read<CartBloc>().add(RemoveSelectedItems());
+                  context.read<CartBloc>().add(
                     PlaceOrderEvent(
-                      address: addresses[selectedAddress]["address"].toString(),
+                      address:
+                          addresses[selectedAddress].fullAddress.toString(),
                       totalAmount: price.toDouble(),
                     ),
                   );
-                  context.watch<CartBloc>().state.status == CartStatus.success?
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => OrderSuccessPage()),
-                ):null;
-              }),
+                  context.watch<CartBloc>().state.status == CartStatus.success
+                      ? Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (_) => OrderSuccessPage()),
+                      )
+                      : null;
+                },
+              ),
             ),
           ],
         ),

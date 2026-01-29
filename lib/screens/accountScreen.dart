@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:stylex/models/addressModel.dart';
+import 'package:stylex/services/api/addressSync.dart';
 import 'package:stylex/services/firebase/firebase_service.dart';
+import 'package:stylex/utils/prefs.dart';
 import 'package:stylex/widgets/backbutton.dart';
 import 'package:stylex/widgets/elivated_button.dart';
 import 'package:stylex/widgets/title.dart';
@@ -13,6 +15,7 @@ class AccountPage extends StatefulWidget {
 }
 
 class _AccountPageState extends State<AccountPage> {
+  List<AddressModel> addresses = [];
   // Controllers
   final nameCtrl = TextEditingController(text: "Asiyath Mubeena");
   final phoneCtrl = TextEditingController(text: "9876543210");
@@ -20,11 +23,18 @@ class _AccountPageState extends State<AccountPage> {
 
   bool isChanged = false;
 
-  List<AddressModel> addresses = [];
+  void loadAdress() async {
+    List<AddressModel> localAddresses = await Prefs.loadAddressesLocally();
+    print("id${localAddresses[0].id}");
+    setState(() {
+      addresses = localAddresses;
+    });
+  }
 
   @override
   void initState() {
     super.initState();
+    loadAdress();
 
     for (var c in [nameCtrl, phoneCtrl, emailCtrl]) {
       c.addListener(() {
@@ -65,9 +75,8 @@ class _AccountPageState extends State<AccountPage> {
           ],
         ),
       ),
-      floatingActionButton: button('LOGOUT', ()  {
+      floatingActionButton: button('LOGOUT', () {
         signOut(context);
-       
       }),
     );
   }
@@ -136,7 +145,8 @@ class _AccountPageState extends State<AccountPage> {
           ],
         ),
         const SizedBox(height: 12),
-        ...addresses.map(_addressCard).toList(),
+       
+        ...addresses.map(_addressCard),
       ],
     );
   }
@@ -203,26 +213,36 @@ class _AccountPageState extends State<AccountPage> {
 
                     child:
                         flag == 0
-                            ? button('SAVE', () {
+                            ? button('SAVE', () async {
                               final newAddress = AddressModel(
-                                name.text,
-                                phone.text,
-                                pin.text,
-                                house.text,
-                                street.text,
-                                landmark.text,
-                                city.text,
+                                name: name.text,
+                                mobile: phone.text,
+                                pincode: pin.text,
+                                house: house.text,
+                                street: street.text,
+                                landmark: landmark.text,
+                                city: city.text,
                               );
 
+                              List<AddressModel> freshList =
+                                  await syncAddressToMongo(newAddress);
+
                               setState(() {
-                                addresses.add(newAddress);
+                                addresses =
+                                    freshList; 
                               });
+
+                              // setState(() {
+                              //   addresses.add(newAddress);
+                              // });
 
                               Navigator.pop(context);
                             })
                             : Row(
                               children: [
                                 button('REMOVE', () {
+                                  Deleteaddress(address!);
+
                                   setState(() {
                                     addresses.remove(address);
                                   });
@@ -232,15 +252,16 @@ class _AccountPageState extends State<AccountPage> {
                                 Spacer(),
                                 button('EDIT', () {
                                   final newAddress = AddressModel(
-                                    name.text,
-                                    phone.text,
-                                    pin.text,
-                                    house.text,
-                                    street.text,
-                                    landmark.text,
-                                    city.text,
+                                    id: address?.id,
+                                    name: name.text,
+                                    mobile: phone.text,
+                                    pincode: pin.text,
+                                    house: house.text,
+                                    street: street.text,
+                                    landmark: landmark.text,
+                                    city: city.text,
                                   );
-
+                                  editaddress(newAddress);
                                   setState(() {
                                     addresses[addresses.indexOf(address!)] =
                                         newAddress;
